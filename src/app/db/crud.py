@@ -4,7 +4,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.db.models import AnalysisRun, Comparison, Dataset, User
+from app.db.models import AnalysisRun, Comparison, Dataset, PipelineRun, User
 
 
 def create_user(
@@ -163,3 +163,64 @@ def list_comparisons_for_dataset(
     )
 
     return list(db.scalars(statement).all())   
+
+
+def create_pipeline_run(
+    db: Session,
+    user_id: int,
+    dataset_id: int,
+    pipeline_name: str,
+    pipeline_config: list[dict[str, Any]],
+    results: list[dict[str, Any]],
+) -> PipelineRun:
+    pipeline_run = PipelineRun(
+        user_id=user_id,
+        dataset_id=dataset_id,
+        pipeline_name=pipeline_name,
+        pipeline_config_json=json.dumps(pipeline_config),
+        results_json=json.dumps(results),
+    )
+
+    db.add(pipeline_run)
+    db.commit()
+    db.refresh(pipeline_run)
+
+    return pipeline_run
+
+
+def get_pipeline_run_by_id(
+    db: Session,
+    pipeline_run_id: int,
+) -> PipelineRun | None:
+    statement = select(PipelineRun).where(PipelineRun.id == pipeline_run_id)
+    return db.scalar(statement)
+
+
+def list_pipeline_runs_for_dataset(
+    db: Session,
+    user_id: int,
+    dataset_id: int,
+) -> list[PipelineRun]:
+    statement = (
+        select(PipelineRun)
+        .where(
+            PipelineRun.user_id == user_id,
+            PipelineRun.dataset_id == dataset_id,
+        )
+        .order_by(PipelineRun.created_at.desc())
+    )
+
+    return list(db.scalars(statement).all())
+
+
+def list_user_pipeline_runs(
+    db: Session,
+    user_id: int,
+) -> list[PipelineRun]:
+    statement = (
+        select(PipelineRun)
+        .where(PipelineRun.user_id == user_id)
+        .order_by(PipelineRun.created_at.desc())
+    )
+
+    return list(db.scalars(statement).all())

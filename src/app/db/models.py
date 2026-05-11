@@ -68,6 +68,10 @@ class User(Base):
         back_populates="user",
         cascade="all, delete-orphan",
     )
+    pipeline_runs: Mapped[list["PipelineRun"]] = relationship(
+    back_populates="user",
+    cascade="all, delete-orphan",
+    )
 
 
 class Dataset(Base):
@@ -123,6 +127,10 @@ class Dataset(Base):
     comparisons: Mapped[list["Comparison"]] = relationship(
         back_populates="dataset",
         cascade="all, delete-orphan",
+    )
+    pipeline_runs: Mapped[list["PipelineRun"]] = relationship(
+    back_populates="dataset",
+    cascade="all, delete-orphan",
     )
 
 
@@ -234,4 +242,57 @@ class Comparison(Base):
 
     dataset: Mapped["Dataset"] = relationship(
         back_populates="comparisons",
+    )
+
+class PipelineRun(Base):
+    __tablename__ = "pipeline_runs"
+
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        index=True,
+    )
+
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id"),
+        nullable=False,
+        index=True,
+    )
+
+    dataset_id: Mapped[int] = mapped_column(
+        ForeignKey("datasets.id"),
+        nullable=False,
+        index=True,
+    )
+
+    pipeline_name: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+        default="Untitled pipeline",
+    )
+
+    pipeline_config_json: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+        default="[]",
+    )
+
+    results_json: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+        default="[]",
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utc_now,
+        nullable=False,
+    )
+
+    user: Mapped["User"] = relationship(
+        back_populates="pipeline_runs",
+    )
+
+    dataset: Mapped["Dataset"] = relationship(
+        back_populates="pipeline_runs",
     )
