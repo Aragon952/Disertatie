@@ -43,6 +43,11 @@ class User(Base):
         nullable=False,
     )
 
+    encrypted_data_key: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+    )
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=utc_now,

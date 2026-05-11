@@ -13,12 +13,14 @@ def create_user(
     email: str,
     password_hash: str,
     encryption_salt: str,
+    encrypted_data_key: str,
 ) -> User:
     user = User(
         username=username,
         email=email,
         password_hash=password_hash,
         encryption_salt=encryption_salt,
+        encrypted_data_key=encrypted_data_key,
     )
 
     db.add(user)
