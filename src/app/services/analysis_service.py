@@ -1,4 +1,5 @@
 import json
+import time 
 from dataclasses import asdict
 from typing import Any
 
@@ -115,15 +116,34 @@ def run_pipeline_and_save(
 ) -> tuple[pd.DataFrame, list[StepResult]]:
     """
     Runs a pipeline and saves its configuration and results in DB.
+
+    A synthetic pipeline_summary result is added at the end, containing
+    general execution and dataset metrics.
     """
+    start_time = time.perf_counter()
+
     final_dataframe, results = run_pipeline(
         dataframe=dataframe,
         steps_config=steps_config,
     )
 
+    execution_time_seconds = time.perf_counter() - start_time
+
+    pipeline_summary_result = build_pipeline_summary_result(
+        input_dataframe=dataframe,
+        output_dataframe=final_dataframe,
+        step_results=results,
+        execution_time_seconds=execution_time_seconds,
+    )
+
+    results_with_summary = [
+        *results,
+        pipeline_summary_result,
+    ]
+
     results_as_dicts = [
         step_result_to_dict(result)
-        for result in results
+        for result in results_with_summary
     ]
 
     create_pipeline_run(
@@ -135,7 +155,7 @@ def run_pipeline_and_save(
         results=results_as_dicts,
     )
 
-    return final_dataframe, results
+    return final_dataframe, results_with_summary
 
 
 def pipeline_results_to_json(results: list[StepResult]) -> str:
@@ -145,4 +165,70 @@ def pipeline_results_to_json(results: list[StepResult]) -> str:
     return json.dumps(
         [step_result_to_dict(result) for result in results],
         ensure_ascii=False,
+    )
+
+def count_missing_values(dataframe: pd.DataFrame) -> int:
+    """
+    Counts all missing values in a DataFrame.
+    """
+    return int(dataframe.isna().sum().sum())
+
+
+def dataframe_memory_mb(dataframe: pd.DataFrame) -> float:
+    """
+    Estimates DataFrame memory usage in MB.
+    """
+    memory_bytes = dataframe.memory_usage(deep=True).sum()
+    return round(memory_bytes / (1024 * 1024), 4)
+
+
+def build_pipeline_summary_result(
+    input_dataframe: pd.DataFrame,
+    output_dataframe: pd.DataFrame,
+    step_results: list[StepResult],
+    execution_time_seconds: float,
+) -> StepResult:
+    """
+    Builds a synthetic StepResult with general pipeline metrics.
+
+    This result is saved together with the other pipeline step results.
+    """
+    input_rows = len(input_dataframe)
+    input_columns = len(input_dataframe.columns)
+
+    output_rows = len(output_dataframe)
+    output_columns = len(output_dataframe.columns)
+
+    missing_values_before = count_missing_values(input_dataframe)
+    missing_values_after = count_missing_values(output_dataframe)
+
+    warnings_count = sum(
+        len(result.warnings)
+        for result in step_results
+    )
+
+    return StepResult(
+        step_name="pipeline_summary",
+        category="custom",
+        output_type="result",
+        parameters={},
+        metrics={
+            "execution_time_seconds": round(execution_time_seconds, 6),
+            "input_rows": input_rows,
+            "input_columns": input_columns,
+            "output_rows": output_rows,
+            "output_columns": output_columns,
+            "rows_delta": output_rows - input_rows,
+            "columns_delta": output_columns - input_columns,
+            "missing_values_before": missing_values_before,
+            "missing_values_after": missing_values_after,
+            "missing_values_delta": missing_values_after - missing_values_before,
+            "dataframe_memory_mb_before": dataframe_memory_mb(input_dataframe),
+            "dataframe_memory_mb_after": dataframe_memory_mb(output_dataframe),
+            "steps_count": len(step_results),
+            "warnings_count": warnings_count,
+        },
+        warnings=[],
+        interpretation="Generated general pipeline execution summary.",
+        output_data=None,
     )

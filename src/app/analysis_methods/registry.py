@@ -1,4 +1,8 @@
 from app.analysis_methods.base import PipelineStep
+from app.analysis_methods.methods import (
+    OutlierDetectionIQRStep,
+    OutlierDetectionZScoreStep,
+)
 from app.analysis_methods.preprocessing import (
     DropMissingRowsStep,
     FillMissingValuesStep,
@@ -20,6 +24,8 @@ def get_available_steps() -> dict[str, PipelineStep]:
         SelectColumnsStep(),
         DescribeDatasetStep(),
         CorrelationMatrixStep(),
+        OutlierDetectionIQRStep(),
+        OutlierDetectionZScoreStep(),
     ]
 
     return {
