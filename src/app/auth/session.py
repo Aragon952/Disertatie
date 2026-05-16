@@ -6,7 +6,8 @@ USERNAME_KEY = "username"
 USER_EMAIL_KEY = "user_email"
 DATA_KEY_KEY = "data_key"
 AUTHENTICATED_KEY = "is_authenticated"
-
+SELECTED_DATASET_ID_KEY = "selected_dataset_id"
+SELECTED_DATASET_NAME_KEY = "selected_dataset_name"
 
 def login_user_session(
     user_id: int,
@@ -34,6 +35,8 @@ def logout_user_session() -> None:
         USERNAME_KEY,
         USER_EMAIL_KEY,
         DATA_KEY_KEY,
+        SELECTED_DATASET_ID_KEY,
+        SELECTED_DATASET_NAME_KEY,
     ]
 
     for key in keys_to_remove:
@@ -73,3 +76,35 @@ def get_current_data_key() -> bytes | None:
     Returns current user's decrypted data key.
     """
     return st.session_state.get(DATA_KEY_KEY)
+
+def set_selected_dataset(
+    dataset_id: int,
+    dataset_name: str,
+) -> None:
+    """
+    Saves selected dataset in Streamlit session state.
+    """
+    st.session_state[SELECTED_DATASET_ID_KEY] = dataset_id
+    st.session_state[SELECTED_DATASET_NAME_KEY] = dataset_name
+
+
+def get_selected_dataset_id() -> int | None:
+    """
+    Returns currently selected dataset id.
+    """
+    return st.session_state.get(SELECTED_DATASET_ID_KEY)
+
+
+def get_selected_dataset_name() -> str | None:
+    """
+    Returns currently selected dataset name.
+    """
+    return st.session_state.get(SELECTED_DATASET_NAME_KEY)
+
+
+def clear_selected_dataset() -> None:
+    """
+    Clears selected dataset from Streamlit session state.
+    """
+    st.session_state.pop(SELECTED_DATASET_ID_KEY, None)
+    st.session_state.pop(SELECTED_DATASET_NAME_KEY, None)

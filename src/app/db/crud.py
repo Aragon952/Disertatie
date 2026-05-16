@@ -224,3 +224,22 @@ def list_user_pipeline_runs(
     )
 
     return list(db.scalars(statement).all())
+
+def update_comparison_ai_summary(
+    db: Session,
+    comparison_id: int,
+    ai_summary: str,
+) -> Comparison:
+    statement = select(Comparison).where(Comparison.id == comparison_id)
+    comparison = db.scalar(statement)
+
+    if comparison is None:
+        raise ValueError(f"Comparison with id={comparison_id} was not found.")
+
+    comparison.ai_summary = ai_summary
+
+    db.add(comparison)
+    db.commit()
+    db.refresh(comparison)
+
+    return comparison
