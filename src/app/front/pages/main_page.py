@@ -9,6 +9,7 @@ from app.auth.session import (
 from app.front.pages.upload_page import render_upload_page
 from app.front.pages.analysis_page import render_analysis_page
 from app.front.pages.results_page import render_results_page
+from app.front.pages.settings_page import render_settings_page
 
 def render_main_page() -> None:
     """
@@ -61,10 +62,7 @@ def render_main_page() -> None:
         render_results_page()
 
     elif selected_page == "Settings":
-        render_placeholder_page(
-            title="Settings",
-            message="Aici vor fi setări ale aplicației.",
-        )
+        render_settings_page()
 
 
 def render_home_page() -> None:

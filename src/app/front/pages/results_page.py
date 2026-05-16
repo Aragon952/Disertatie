@@ -339,8 +339,13 @@ def render_comparison_results(
     if comparison_table:
         st.write("Tabel comparativ")
 
+        comparison_dataframe = pd.DataFrame(comparison_table)
+
+        for column in comparison_dataframe.columns:
+            comparison_dataframe[column] = comparison_dataframe[column].astype(str)
+
         st.dataframe(
-            pd.DataFrame(comparison_table),
+            comparison_dataframe,
             width="stretch",
         )
     else:
