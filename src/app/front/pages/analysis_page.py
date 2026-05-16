@@ -210,7 +210,33 @@ def render_parameters_form(
 
         widget_key = f"param_{step_metadata['name']}_{parameter_name}"
 
-        if parameter_type == "columns":
+        if parameter_type == "column":
+            column_options = list(dataframe.columns)
+
+            if not column_options:
+                st.warning("Datasetul nu are coloane disponibile.")
+                parameters[parameter_name] = None
+                continue
+
+            default_index = 0
+
+            if isinstance(default, str) and default in column_options:
+                default_index = column_options.index(default)
+
+            value = st.selectbox(
+                parameter_label,
+                options=column_options,
+                index=default_index,
+                help=help_text,
+                key=widget_key,
+            )
+
+            if required and not value:
+                st.warning(f"Parametrul '{parameter_label}' este obligatoriu.")
+
+            parameters[parameter_name] = value
+
+        elif parameter_type == "columns":
             default_columns = normalize_default_columns(
                 default=default,
                 dataframe=dataframe,

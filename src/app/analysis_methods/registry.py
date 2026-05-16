@@ -1,7 +1,20 @@
 from app.analysis_methods.base import PipelineStep
 from app.analysis_methods.methods import (
+    AgglomerativeClusteringSklearnStep,
+    DBSCANSklearnStep,
+    KMeansCustomStep,
+    KMeansScipyStep,
+    KMeansSklearnStep,
+    LinearRegressionCustomStep,
+    LinearRegressionSklearnStep,
+    LinearRegressionStatsmodelsStep,
+    MinMaxScalerSklearnStep,
     OutlierDetectionIQRStep,
     OutlierDetectionZScoreStep,
+    RobustScalerSklearnStep,
+    StandardScalerCustomStep,
+    StandardScalerScipyStep,
+    StandardScalerSklearnStep,
 )
 from app.analysis_methods.preprocessing import (
     DropMissingRowsStep,
@@ -26,6 +39,19 @@ def get_available_steps() -> dict[str, PipelineStep]:
         CorrelationMatrixStep(),
         OutlierDetectionIQRStep(),
         OutlierDetectionZScoreStep(),
+        StandardScalerSklearnStep(),
+        StandardScalerScipyStep(),
+        StandardScalerCustomStep(),
+        MinMaxScalerSklearnStep(),
+        RobustScalerSklearnStep(),
+        KMeansSklearnStep(),
+        KMeansScipyStep(),
+        KMeansCustomStep(),
+        AgglomerativeClusteringSklearnStep(),
+        DBSCANSklearnStep(),
+        LinearRegressionSklearnStep(),
+        LinearRegressionStatsmodelsStep(),
+        LinearRegressionCustomStep(),
     ]
 
     return {
